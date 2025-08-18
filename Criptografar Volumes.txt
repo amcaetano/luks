@@ -1,0 +1,51 @@
+#---------------------------------- CRIPTOGRAFAR DISCOS --------------------------------------#
+
+#1 Instalar o pacote cryptsetup (dependencias luks):
+
+  => apt update
+  => apt install cryptsetup
+
+#2 Desmontar unidades de armazenamento que serão criptografadas:
+
+  => sudo umount /dev/sdx
+  => Modifique "sdx" pelo identificador correto de sua unidade
+
+
+#3 Formatar e criptografar as unidades de armazenamento e configurar a senha para abrir o volume criptografado posteriormente:
+
+  => sudo cryptsetup luksFormat /dev/sdX
+  => OBS: Escrever a resposta "YES" com letras maiusculas
+
+#4 Mapear o volume criptografado no /dev/mapper
+
+  => sudo cryptsetup luksOpen /dev/sdX encrypted_disk
+  => Será feito o mapeamento do dispositivo com o nome de "encrypted_disk", mas pode ser qualquer nome.
+
+#4 Criar sistema de arquivos:
+
+  => sudo mkfs.xfs /dev/mapper/encrypted_disk
+  => Neste exemplo foi criado o sistema de arquivos xfs, mas pode ser ext4, zfs, vfat etc.
+
+#5 Criar diretório para montagem e Montar o Volume Criptografado:
+
+  => mkdir /mnt/encrypted_disk
+  => sudo mount /dev/mapper/encrypted_disk /mnt/encrypted_disk
+  => OBS: Para desmontar o volume executar comando a seguir: sudo cryptsetup luksClose /dev/mapper/encrypted_disk
+
+#6 Configuração Automática no Boot adicionando a linha abaixo no arquivo /etc/crypttab:
+
+  => encrypted_disk /dev/sdX none luks
+  => Modifique "encrypted_disk" e "sdx" pelo nome e pelo identificador correto de sua undidade de armazenamento
+
+#7 Adicionar linha abaixo no arquivo de configuração /etc/fstab para finalizar boot do volume criptografado:
+
+  => /dev/mapper/encrypted_disk /mnt/encrypted_disk xfs defaults 0 2
+
+  => se for necessário montar mais de uma unidade de disco automaticamente no momento do boot do sistema, basta modificar o "encrypted_disk" para outros dados previamente configurados nos passos anteriores e manter todo o restante das informações da linha anterior, pois caso contrário falhará o processo e não serão montados os demais volumes, somente o primeiro.
+
+  => Execute o comando mount -a para saber se não há nenhum erro de sintaxe no arquivo de configuração /etc/fstab
+
+
+
+
+
