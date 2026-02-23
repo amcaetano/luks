@@ -1,0 +1,33 @@
+#---------------------------------- CRIAR COFRE CRIPTOGRAFICO ATRAVES DE ARQUIVO --------------------------------------#
+
+
+1. Criar arquivo vazio para uso como drive virtual criptografado
+
+  => dd if=/dev/zero of=~/cofre.img bs=4M count=0 seek=500 status=progress
+  => OBS: No exemplo acima usamos um truque, ou seja, vamos criar um arquivo de "500MB" porem ao passo que voce armazenar arquivos o container vai aumentado ate chegar no tamanho maximo configurado, isto e, 500MB. Isso porque usamos o parametro "count=o seek=500"
+
+2. Formatar o arquivo e definir a senha mestra.
+
+  => sudo cryptsetup luksFormat ~/cofre.img
+  => OBS: Escrever a resposta "YES" com letras maiusculas
+
+3. Mapear cofre criptografado
+
+  => sudo cryptsetup open ~/cofre.img cofre_aberto
+  => Será feito o mapeamento do dispositivo com o nome de "cofre_aberto", mas pode ser qualquer nome.
+
+4. Criar sistema de arquivos:
+
+  => sudo mkfs.ext4 /dev/mapper/cofre_aberto
+  => Neste exemplo foi criado o sistema de arquivos ext4, mas pode ser xfs, zfs, vfat etc.
+
+5. Criar diretório para montagem e Montar cofre Criptografado:
+
+  => mkdir -p ~/Documentos/Cofre
+  => sudo mount /dev/mapper/cofre_aberto ~/Documentos/Cofre
+  => sudo chown $USER:$USER ~/Documentos/Cofre 
+
+6. Desmontar cofre ao tgerminar que armazenar arquivos
+
+  =>sudo umount ~/Documentos/Cofre
+  => sudo cryptsetup close cofre_aberto
